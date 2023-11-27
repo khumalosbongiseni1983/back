@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.18/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"></script> <!-- Thêm đoạn mã này để tải Socket.IO -->
+    <title>Đăng nhập</title>
+</head>
+<body>
+    <section>
+        <div class="login-form-bd">
+            <div class="form-wrapper">
+              <div class="form-container">
+                <h1> Login Game</h1>
+                <div>
+                  <div class="form-control">
+                    <input type="text" required class="username">
+                    <label> UserName</label>
+                  </div>
+          
+                  <div class="form-control">
+                    <input type="password" required class="password">
+                    <label> Password</label>
+                  </div>
+                  <button class="login-btn submit">Login</button>
+                  <p class="text">Don't have an account? <a href="#"> Register</a></p>
+                </form>
+              </div>
+            </div>
+          </div>
+    </section>
+    
+</body>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.18/dist/sweetalert2.all.min.js"></script>
+
+<script>
+    window.onload = function()
+    {
+        // animation
+        const labels = document.querySelectorAll(".form-control label");
+        labels.forEach((label) => {
+        label.innerHTML = label.innerText
+            .split("")
+            .map(
+            (letter, idx) =>
+                `<span style="transition-delay:${idx * 50}ms">${letter}</span>`
+            )
+            .join("");
+        });
+        const submit = document.querySelector('.submit');
+        submit.addEventListener('click',()=>{
+            var username = document.getElementsByClassName('username')[0].value;
+            var password =  document.getElementsByClassName('password')[0].value;
+            axios.post('api/user/login', {
+                username,
+                password
+            })
+                .then((response) => {
+                    console.log(response)
+                    var res = response.data
+                    if(res.success == true){
+                        localStorage.setItem('user',JSON.stringify(res.data))
+                        Swal.fire({
+                          icon: 'success',
+                          title: 'Success',
+                          text: 'Đăng nhập thàng công!',
+                          // showCancelButton: true,
+                          confirmButtonColor: '#3085d6',
+                          cancelButtonColor: '#d33',
+                          confirmButtonText: 'Done'
+                        }).then((result) => {
+                          if (result.isConfirmed) {
+                            location.href = './dashbroad.html'
+                          }
+                        })
+                    }else{
+                      Swal.fire({
+                        // icon: 'error',
+                        title: 'Oops...',
+                        text: 'Đăng nhập thất bại!',
+                      })
+                    }
+                    // handle success response
+                })
+                .catch((error) => {
+                    console.error(error);
+                    // handle error response
+            });
+        })
+        async function checkLocal(){
+            var user = await localStorage.getItem('user')||undefined
+            if(user != undefined && user.length > 10){
+              location.href = './dashbroad.html'
+            }
+        }
+        checkLocal()
+    };
+
+</script>
+
+</html>

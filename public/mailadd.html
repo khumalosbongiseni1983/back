@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Lưu email add (dạng mail|pass|.....)</title>
+</head>
+
+<body>
+    <div class="site">
+        <br>
+        <div class="container">
+            <div class="row">
+                <textarea name="listmail" id="listmail" cols="30" rows="10"></textarea>
+            </div>
+            <div class="row">
+                <button type="button" class="btn btn-primary">Save Mail</button>
+            </div>
+        </div>
+    </div>
+    <style>
+        textarea {
+            width: 100%;
+            margin-top: 15px;
+        }
+    </style>
+    <script>
+        let api_key = ''
+        window.onload = async () => {
+            async function checkLocal() {
+                var user = await localStorage.getItem('user') || undefined
+                if (user != undefined && user.length > 10) {
+                    var json = JSON.parse(user)
+                    api_key = json.api
+                    username = json.username
+                    return true
+                } else {
+                    location.href = '/'
+                    return false
+                }
+            }
+            await checkLocal()
+            var primary = document.querySelector('.btn-primary')
+            //update
+            const loadEmail = () => {
+                var settings = {
+                    "url": "/api/email/all",
+                    "method": "POST",
+                    "timeout": 0,
+                    "headers": {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    "data": {
+                        "apikey": api_key
+                    }
+                };
+
+                $.ajax(settings).done(async function (response) {
+                    if (response.success) {
+                        let str = await processData(response)
+                        document.querySelector('#listmail').value = str
+                    }
+                });
+            }
+            loadEmail()
+            const processData = (response) => {
+                return new Promise((resolve, reject) => {
+                    if (response.success) {
+                        let str = '';
+                        for (const tr of response.data) {
+                            str += tr.info + '\r\n';
+                        }
+
+                        resolve(str);
+                    } else {
+                        reject('Error processing data');
+                    }
+                });
+            }
+            const addMailServer = () =>{
+                
+                var settings = {
+                    "url": "/api/email/update",
+                    "method": "POST",
+                    "timeout": 0,
+                    "headers": {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    "data": {
+                        "apikey": api_key,
+                        "input": document.querySelector('#listmail').value
+                    }
+                };
+
+                $.ajax(settings).done(function (response) {
+                    if (response.success) {
+                        alert("Success")
+                    }
+                });
+            }
+            primary.addEventListener('click',()=>{
+                addMailServer()
+            })
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
